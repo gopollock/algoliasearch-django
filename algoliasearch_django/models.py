@@ -170,7 +170,7 @@ class AlgoliaIndex(object):
             self.index_name += '_' + settings['INDEX_SUFFIX']
 
         self.__index = client.init_index(self.index_name)
-        self.__tmp_index = client.init_index(self.index_name + '_tmp')
+        # self.__tmp_index = client.init_index(self.index_name + '_tmp')
 
     @staticmethod
     def _validate_geolocation(geolocation):
@@ -447,7 +447,7 @@ class AlgoliaIndex(object):
                     self.settings['slaves'] = []
                     logger.debug("REMOVE SLAVES FROM SETTINGS")
 
-                self.__tmp_index.wait_task(self.__tmp_index.set_settings(self.settings)['taskID'])
+                # self.__tmp_index.wait_task(self.__tmp_index.set_settings(self.settings)['taskID'])
                 logger.debug('APPLY SETTINGS ON %s_tmp', self.index_name)
             rules = []
             synonyms = []
@@ -462,8 +462,8 @@ class AlgoliaIndex(object):
                 logger.debug('Got synonyms for index %s: %s', self.index_name, rules)
                 should_keep_synonyms = True
 
-            self.__tmp_index.clear_index()
-            logger.debug('CLEAR INDEX %s_tmp', self.index_name)
+            # self.__tmp_index.clear_index()
+            # logger.debug('CLEAR INDEX %s_tmp', self.index_name)
 
             counts = 0
             batch = []
@@ -479,20 +479,16 @@ class AlgoliaIndex(object):
 
                 batch.append(self.get_raw_record(instance))
                 if len(batch) >= batch_size:
-                    self.__tmp_index.save_objects(batch)
-                    logger.info('SAVE %d OBJECTS TO %s_tmp', len(batch),
-                                self.index_name)
+                    self.__index.save_objects(batch)
+                    logger.info('SAVE %d OBJECTS TO %s', len(batch), self.index_name)
                     batch = []
                 counts += 1
             if len(batch) > 0:
-                self.__tmp_index.save_objects(batch)
-                logger.info('SAVE %d OBJECTS TO %s_tmp', len(batch),
-                            self.index_name)
+                self.__index.save_objects(batch)
+                logger.info('SAVE %d OBJECTS TO %s_tmp', len(batch), self.index_name)
 
-            self.__client.move_index(self.__tmp_index.index_name,
-                                     self.__index.index_name)
-            logger.info('MOVE INDEX %s_tmp TO %s', self.index_name,
-                        self.index_name)
+            # self.__client.move_index(self.__tmp_index.index_name, self.__index.index_name)
+            # logger.info('MOVE INDEX %s_tmp TO %s', self.index_name, self.index_name)
 
             if self.settings:
                 if should_keep_replicas:
